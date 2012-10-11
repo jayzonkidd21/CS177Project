@@ -12,6 +12,8 @@ static const double MY_PI = 3.14159265358979323846264338327;
 
 enum { ATTRIB_POS, ATTRIB_COLOR };
 
+const GLuint COLOR_BROWN = 0x003366, COLOR_GREEN = 0x33FF00, COLOR_RED = 0x000099, COLOR_BLUE = 0xCC0000, COLOR_YELLOW = 0x33FFFF, COLOR_ORANGE =0x0033FF, COLOR_VIOLET = 0x660066, COLOR_GREY = 0x666666;
+//BROWN, RED, BLUE, ORANGE, GREY, VIOLET, ORANGE, YELLOW, GREEN 
 GLuint mvpMatrixID;
 
 struct Vtx
@@ -66,6 +68,13 @@ struct GLMatrix3 {
 		swap(mat[3],mat[1]);
 		swap(mat[6],mat[2]);
 		swap(mat[7],mat[5]);
+	}
+
+	void setClipMatrix( GLfloat lBound, GLfloat rBound, GLfloat topBound, GLfloat botBound )
+	{
+		setIdentity();
+		mat[0] = 2 / ( rBound - lBound );
+		mat[4] = 2 / ( topBound - botBound );
 	}
 	
 	GLMatrix3& operator=(const GLMatrix3 &rhs) {
@@ -123,24 +132,24 @@ public:
 	}
 };
 
-class SquareNode : public SceneNode
+class RectangleNode : public SceneNode
 {
 	Vtx vertices[6];
     public:
-	SquareNode( GLfloat side, GLfloat centerX, GLfloat centerY, GLuint cColor )
+	RectangleNode( GLfloat length, GLfloat width, GLfloat centerX, GLfloat centerY, GLuint cColor )
 	{
-		vertices[0].x = centerX - side/2;
-		vertices[0].y = centerY + side/2;
-		vertices[1].x = centerX - side/2;
-		vertices[1].y = centerY - side/2;
-		vertices[2].x = centerX + side/2;
-		vertices[2].y = centerY - side/2;
-		vertices[3].x = centerX + side/2;
-		vertices[3].y = centerY - side/2;
-		vertices[4].x = centerX + side/2;
-		vertices[4].y = centerY + side/2;
-		vertices[5].x = centerX - side/2;
-		vertices[5].y = centerY + side/2;
+		vertices[0].x = centerX - width/2;
+		vertices[0].y = centerY + length/2;
+		vertices[1].x = centerX - width/2;
+		vertices[1].y = centerY - length/2;
+		vertices[2].x = centerX + width/2;
+		vertices[2].y = centerY - length/2;
+		vertices[3].x = centerX + width/2;
+		vertices[3].y = centerY - length/2;
+		vertices[4].x = centerX + width/2;
+		vertices[4].y = centerY + length/2;
+		vertices[5].x = centerX - width/2;
+		vertices[5].y = centerY + length/2;
 
 		for( int i = 0; i < 6; i++ )
 		{
@@ -168,8 +177,8 @@ class CircleNode : public SceneNode
 			for( int i = 0; i < 360; i++ )
 			{
 				float angleInRadians = i * MY_PI / 180;
-				vertices[i].x = radius * cos( angleInRadians );	
-				vertices[i].y = radius * sin( angleInRadians );
+				vertices[i].x = centerX + radius * cos( angleInRadians );	
+				vertices[i].y = centerY + radius * sin( angleInRadians );
 				vertices[i].color = cColor;
 			}
 	  }
@@ -180,6 +189,36 @@ class CircleNode : public SceneNode
 		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vtx), &vertices[0].color);
 		glUniformMatrix3fv(mvpMatrixID, 1, false, t.mat);
 		glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof( vertices ) / sizeof( Vtx ) );
+		
+		drawChildren(t);
+	}
+};
+
+class TriangleNode : public SceneNode
+{
+	Vtx vertices[3];
+	public:
+	TriangleNode( GLfloat base, GLfloat height, GLfloat centerX, GLfloat centerY, GLuint cColor )
+	{
+		vertices[0].x = centerX;
+		vertices[0].y = centerY + height/2;
+		vertices[1].x = centerX - base/2;
+		vertices[1].y = centerY - height/2;
+		vertices[2].x = centerX + base/2;
+		vertices[2].y = centerY - height/2;
+
+		for( int i = 0; i < 3; i++ )
+		{
+			vertices[i].color = cColor;
+		}
+	}
+
+	virtual void draw(const GLMatrix3 &parentTransform) {
+		const GLMatrix3 &t = parentTransform * transform;
+		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vtx), &vertices[0].x);
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vtx), &vertices[0].color);
+		glUniformMatrix3fv(mvpMatrixID, 1, false, t.mat);
+		glDrawArrays(GL_TRIANGLES, 0, sizeof( vertices ) / sizeof( Vtx ) );
 		
 		drawChildren(t);
 	}
@@ -294,25 +333,45 @@ int main()
 	glLoadIdentity();
 
 	SceneNode root;
+	SceneNode scene;
+	SceneNode house;
+	SceneNode guy;
+	SceneNode xmasTree;
 	
-	SquareNode square( 0.5, 0.0, 0.0, 0xDEADBEEF );
-	SquareNode anotherSquare( 0.5, 0.5, 0.5, 0xABCDEFED );
-	
-	CircleNode circle( 0.3, -0.5, 0.5, 0xABEDDEBA );
-	CircleNode player( 0.1, -0.5, -0.5, 0xFFAAAAFF );
+	//RectangleNode houseBody( 0.4, 0.4, 0.0, 0.0, COLOR_YELLOW );
+	//TriangleNode roof( 0.8, 0.35, 0.0, 0.375, COLOR_BROWN );
 
-	//root.children.push_back( &player );
-	player.children.push_back( &root );
-	
-	root.children.push_back( &circle );
-	
-	circle.children.push_back( &square );
-	//root.children.push_back( &anotherSquare );
+	RectangleNode houseBody( 200, 200, 0.0, 0.0 - 220, COLOR_RED );
+	TriangleNode roof( 200, 100, 0, 150 - 220, COLOR_BROWN );
+
+	CircleNode sun( 50, 240, 240, COLOR_YELLOW );
+
+	CircleNode guyHead( 20, 150, -240, COLOR_YELLOW );
+	RectangleNode guyBody( 80, 20, 150, -280, COLOR_BLUE );
+
+	RectangleNode xmasTreeBody( 60, 40, -240, -290, COLOR_BROWN );
+	TriangleNode xmasTreeLeaf( 100, 80, -240, -220, COLOR_GREEN );
+
+	guy.children.push_back( &guyBody );
+	guy.children.push_back( &guyHead );
+
+	house.children.push_back( &roof );
+	house.children.push_back( &houseBody );
+
+	xmasTree.children.push_back( &xmasTreeBody );
+	xmasTree.children.push_back( &xmasTreeLeaf );
+
+	scene.children.push_back( &house );
+	scene.children.push_back( &xmasTree );
+
+	root.children.push_back( &scene );
+	root.children.push_back( &sun );
+	root.children.push_back( &guy );
 
 	mvpMatrixID = glGetUniformLocation( mainProgram, "mvpMatrix" );
 	double t = 0;
 
-	GLfloat camX = 0, camY = 0, camS = 1;
+	GLfloat camX = 150, camY = 0, camS = 1;
 
 	do {
 		int width, height;
@@ -330,41 +389,36 @@ int main()
 			if( lShiftPressed )
 				camS += 0.02;
 			else
-				camY += 0.02;
+				camY += 5;
 		}
 		else if( glfwGetKey( GLFW_KEY_DOWN ) == GLFW_PRESS )
 		{
 			if( lShiftPressed )
 				camS -= 0.02;
 			else
-				camY -= 0.02;
+				camY -= 5;
 		}
 		else if( glfwGetKey( GLFW_KEY_LEFT ) == GLFW_PRESS )
-			camX -= 0.02;
+			camX -= 5;
 		else if( glfwGetKey( GLFW_KEY_RIGHT ) == GLFW_PRESS )
-			camX += 0.02;
+			camX += 5;
 			
 		if( camS < 0 )
 			camS = 0;
+
+		if( camY < 0 )
+			camY = 0;
 			
-        GLMatrix3 cameraMatrix, modelMatrix, transMatrix, tempMatrix;
-        
-        modelMatrix.setRotation( 0, 0, t * 10 );
-        square.transform = modelMatrix;
-        
-        circle.transform.setRotation( 0, 0, t );
-        modelMatrix.setTranslation( 0.5, 0.0 );
-        circle.transform *= modelMatrix;
-        
-    	cameraMatrix.setIdentity();
-    	cameraMatrix.translate( -camX, -camY );
-    	tempMatrix.setIdentity();
-    	tempMatrix.scale( camS, camS );
-    	cameraMatrix *= tempMatrix;
-    	root.transform = cameraMatrix;
-    	
-    	tempMatrix.setIdentity();
-        player.draw( tempMatrix );
+        GLMatrix3 modelMatrix, transMatrix, tempMatrix;
+
+		modelMatrix.setTranslation( -camX, -camY );
+		scene.transform = modelMatrix;
+
+		//root.transform = modelMatrix;
+		
+		tempMatrix.setClipMatrix( -( width / 2), width / 2, height/2, -( height / 2 ) ); 
+		modelMatrix = tempMatrix;
+		root.draw( modelMatrix );
         
 		t += 0.02;
 		//VERY IMPORTANT: displays the buffer to the screen
