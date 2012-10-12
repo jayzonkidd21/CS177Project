@@ -12,8 +12,8 @@ static const double MY_PI = 3.14159265358979323846264338327;
 
 enum { ATTRIB_POS, ATTRIB_COLOR };
 
-const GLuint COLOR_BROWN = 0x003366, COLOR_GREEN = 0x33FF00, COLOR_RED = 0x000099, COLOR_BLUE = 0xCC0000, COLOR_YELLOW = 0x33FFFF, COLOR_ORANGE =0x0033FF, COLOR_VIOLET = 0x660066, COLOR_GREY = 0x666666;
-//BROWN, RED, BLUE, ORANGE, GREY, VIOLET, ORANGE, YELLOW, GREEN 
+const GLuint COLOR_BROWN = 0x003366, COLOR_GREEN = 0x33FF00, COLOR_RED = 0x000099, COLOR_BLUE = 0xCC0000, COLOR_YELLOW = 0x33FFFF, COLOR_ORANGE =0x0033FF, COLOR_VIOLET = 0x660066, COLOR_GREY = 0x666666, COLOR_WHITE = 0xFFFFFF, COLOR_BLACK = 0x000000, COLOR_LCYAN= 0xE0FFFF;
+//BROWN, RED, BLUE, ORANGE, GREY, VIOLET, ORANGE, YELLOW, GREEN, BLACK, WHITE 
 GLuint mvpMatrixID;
 
 struct Vtx
@@ -224,6 +224,43 @@ class TriangleNode : public SceneNode
 	}
 };
 
+class HardRectNode : public SceneNode
+{
+	Vtx vertices[6];
+	public:
+	HardRectNode( GLfloat x1, GLfloat y1,GLfloat x2, GLfloat y2,GLfloat x3, GLfloat y3,GLfloat x4, GLfloat y4, GLfloat centerX, GLfloat centerY, GLuint cColor )
+	{
+		vertices[0].x = x1;
+		vertices[0].y = y1;
+		vertices[1].x = x2;
+		vertices[1].y = y2;
+		vertices[2].x = x3;
+		vertices[2].y = y3;
+
+		vertices[3].x = x3;
+		vertices[3].y = y3;
+		vertices[4].x = x4;
+		vertices[4].y = y4;
+		vertices[5].x = x1;
+		vertices[5].y = y1;
+
+		for( int i = 0; i < 6; i++ )
+		{
+			vertices[i].color = cColor;
+		}
+	}
+
+	virtual void draw(const GLMatrix3 &parentTransform) {
+		const GLMatrix3 &t = parentTransform * transform;
+		glVertexAttribPointer(ATTRIB_POS, 2, GL_FLOAT, GL_FALSE, sizeof(Vtx), &vertices[0].x);
+		glVertexAttribPointer(ATTRIB_COLOR, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vtx), &vertices[0].color);
+		glUniformMatrix3fv(mvpMatrixID, 1, false, t.mat);
+		glDrawArrays(GL_TRIANGLES, 0, sizeof( vertices ) / sizeof( Vtx ) );
+		
+		drawChildren(t);
+	}
+};
+
 GLuint mainProgram = 0;
 
 bool loadShaderSource(GLuint shader, const char *path) {
@@ -337,41 +374,189 @@ int main()
 	SceneNode house;
 	SceneNode guy;
 	SceneNode xmasTree;
+	SceneNode cloud;
+	SceneNode airplane;
+	
 	
 	//RectangleNode houseBody( 0.4, 0.4, 0.0, 0.0, COLOR_YELLOW );
 	//TriangleNode roof( 0.8, 0.35, 0.0, 0.375, COLOR_BROWN );
+	
+	RectangleNode cloudBulk(60, 200, -125, 215, COLOR_LCYAN );
+	CircleNode cloudC1( 20, -235, 200, COLOR_LCYAN);
+	CircleNode cloudC2( 25, -215, 230, COLOR_LCYAN);
+	CircleNode cloudC3( 20, -185, 250, COLOR_LCYAN);
+	CircleNode cloudC4( 30, -145, 240, COLOR_LCYAN);
+	CircleNode cloudC5( 30, -105, 270, COLOR_LCYAN);
+	CircleNode cloudC6( 25, -95, 260, COLOR_LCYAN);
+	CircleNode cloudC7( 35, -45, 225, COLOR_LCYAN);
+	CircleNode cloudC8( 25, -15, 215, COLOR_LCYAN);
+	CircleNode cloudC9( 30, -35, 200, COLOR_LCYAN);
+	CircleNode cloudC10( 40, -75, 220, COLOR_LCYAN);
+	CircleNode cloudC11( 30, -115, 205, COLOR_LCYAN);
+	CircleNode cloudC12( 25, -165, 200, COLOR_LCYAN);
+	CircleNode cloudC13( 25, -205, 200, COLOR_LCYAN);
+	cloud.children.push_back( &cloudBulk );
+	cloud.children.push_back( &cloudC1 );
+	cloud.children.push_back( &cloudC2 );
+	cloud.children.push_back( &cloudC3 );
+	cloud.children.push_back( &cloudC4 );
+	cloud.children.push_back( &cloudC5 );
+	cloud.children.push_back( &cloudC6 );
+	cloud.children.push_back( &cloudC7 );
+	cloud.children.push_back( &cloudC8 );
+	cloud.children.push_back( &cloudC9 );
+	cloud.children.push_back( &cloudC10 );
+	cloud.children.push_back( &cloudC11 );
+	cloud.children.push_back( &cloudC12 );
+	cloud.children.push_back( &cloudC13 );
 
-	RectangleNode houseBody( 200, 200, 0.0, 0.0 - 220, COLOR_RED );
-	TriangleNode roof( 200, 100, 0, 150 - 220, COLOR_BROWN );
+	RectangleNode cloudBulk2(60, 200, -125 + 290, 215 -115, COLOR_LCYAN );
+	CircleNode cloudC1x( 20, -235 + 290, 200 -115, COLOR_LCYAN);
+	CircleNode cloudC2x( 25, -215 + 290, 230 -115, COLOR_LCYAN);
+	CircleNode cloudC3x( 20, -185 + 290, 250 -115, COLOR_LCYAN);
+	CircleNode cloudC4x( 30, -145 + 290, 240 -115, COLOR_LCYAN);
+	CircleNode cloudC5x( 30, -105 + 290, 270 -115, COLOR_LCYAN);
+	CircleNode cloudC6x( 25, -95 + 290, 260 -115, COLOR_LCYAN);
+	CircleNode cloudC7x( 35, -45 + 290, 225 -115, COLOR_LCYAN);
+	CircleNode cloudC8x( 25, -15 + 290, 215 -115, COLOR_LCYAN);
+	CircleNode cloudC9x( 30, -35 + 290, 200 -115, COLOR_LCYAN);
+	CircleNode cloudC10x( 40, -75 + 290, 220 -115, COLOR_LCYAN);
+	CircleNode cloudC11x( 30, -115 + 290, 205 -115, COLOR_LCYAN);
+	CircleNode cloudC12x( 25, -165 + 290, 200 -115, COLOR_LCYAN);
+	CircleNode cloudC13x( 25, -205 + 290, 200 -115, COLOR_LCYAN);
+	cloud.children.push_back( &cloudBulk2 );
+	cloud.children.push_back( &cloudC1x );
+	cloud.children.push_back( &cloudC2x );
+	cloud.children.push_back( &cloudC3x );
+	cloud.children.push_back( &cloudC4x );
+	cloud.children.push_back( &cloudC5x );
+	cloud.children.push_back( &cloudC6x );
+	cloud.children.push_back( &cloudC7x );
+	cloud.children.push_back( &cloudC8x );
+	cloud.children.push_back( &cloudC9x );
+	cloud.children.push_back( &cloudC10x );
+	cloud.children.push_back( &cloudC11x );
+	cloud.children.push_back( &cloudC12x );
+	cloud.children.push_back( &cloudC13x );
+
+	RectangleNode houseBody( 195, 200, 0.0, 0.0 - 220, COLOR_RED );
+	RectangleNode houseBodyBorder( 200, 200, 0.0, 0.0 - 220, COLOR_BLACK);
+	//RectangleNode doorBorder( 150, 80, 0.0, 0.0 - 275, COLOR_BLACK );
+	//RectangleNode door( 145, 75, 0.0, 0.0 - 275, COLOR_YELLOW);
+	RectangleNode doorBorder( 120, 80, 0.0, 0.0 - 255, COLOR_BLACK );
+	RectangleNode door( 125, 75, 0.0, 0.0 - 255, COLOR_YELLOW);
+	CircleNode doorKnob( 7, 0.0 + 20, 0.0 -275, COLOR_BLACK );
+	TriangleNode roof( 250, 100, 0.0, 150 - 220, COLOR_BROWN );
+	TriangleNode roofCover( 125, 40, 0.0, 150 - 190, COLOR_BLACK );
 
 	CircleNode sun( 50, 240, 240, COLOR_YELLOW );
+	HardRectNode sunLight1(80 , 240, 110, 233, 180, 240, 110, 247, 140, 260, COLOR_YELLOW );
+	//HardRectNode sunLight5(240 - (120/sqrt(2.0)) , 240 + (20/sqrt(2.0)), 240 - (150/sqrt(2.0)), 240 +(27/sqrt(2.0)), 240 - (80/sqrt(2.0)), 240 +(20/sqrt(2.0)) , 240+(150/sqrt(2.0)), 240 +(13/sqrt(2.0)), 140, 260, COLOR_YELLOW );
+	//HardRectNode sunLight6(240 - (120/sqrt(2.0)) +20, 240 + (20/sqrt(2.0))+25, 240 - (150/sqrt(2.0))+20, 240 +(27/sqrt(2.0))+25, 240 - (80/sqrt(2.0))+20, 240 +(20/sqrt(2.0)) +25, 240+(150/sqrt(2.0))+20, 240 +(13/sqrt(2.0))+25, 140, 260, COLOR_YELLOW );
+	//HardRectNode sunLight7(240 - (120/sqrt(2.0)) +20 , 240 + (20/sqrt(2.0))-60, 240 - (150/sqrt(2.0)) +20, 240 +(27/sqrt(2.0))-60, 240 - (80/sqrt(2.0)) +20, 240 +(20/sqrt(2.0))-60 , 240+(150/sqrt(2.0)) +20, 240 +(13/sqrt(2.0))-60, 140, 260, COLOR_YELLOW );
+	//HardRectNode sunLight8(240 - (120/sqrt(2.0)), 240 + (20/sqrt(2.0))-35, 240 - (150/sqrt(2.0)), 240 +(27/sqrt(2.0))-35, 240 - (80/sqrt(2.0)), 240 +(20/sqrt(2.0)) -35, 240+(150/sqrt(2.0)), 240 +(13/sqrt(2.0))-35, 140, 260, COLOR_YELLOW );
+	HardRectNode sunLight4(240 , 80, 233, 110, 240, 180, 247, 110, 260, 140, COLOR_YELLOW );
+	HardRectNode sunLight2(400 , 240, 370, 233, 300, 240, 370, 247, 140, 260, COLOR_YELLOW );
+	HardRectNode sunLight3(240 , 400, 233, 370, 240, 300, 247, 370, 140, 260, COLOR_YELLOW );
 
+	TriangleNode airp( 60, 60, -320, 240, COLOR_BLUE );
+	TriangleNode airWingLeft( 20, 45, -320, 250, COLOR_BLACK );
+	TriangleNode airWingLeft2( 17, 42, -320, 250, 0x9D9D0C ); // 
+	RectangleNode airpHollow( 20, 20, -320, 220, COLOR_BLACK );
+	
 	CircleNode guyHead( 20, 150, -240, COLOR_YELLOW );
 	RectangleNode guyBody( 80, 20, 150, -280, COLOR_BLUE );
 
 	RectangleNode xmasTreeBody( 60, 40, -240, -290, COLOR_BROWN );
 	TriangleNode xmasTreeLeaf( 100, 80, -240, -220, COLOR_GREEN );
+	TriangleNode xmasTreeLeaf2( 90, 70, -240, -210, COLOR_GREEN );
+	TriangleNode xmasTreeLeaf2S( 90, 70, -240, -212, COLOR_BLACK );
+	TriangleNode xmasTreeLeaf3( 80, 60, -240, -200, COLOR_GREEN );
+	TriangleNode xmasTreeLeaf3S(80, 60, -240, -202, COLOR_BLACK );
+	TriangleNode xmasTreeLeaf4( 70, 50, -240, -190, COLOR_GREEN );
+	TriangleNode xmasTreeLeaf4S( 70, 50, -240, -192, COLOR_BLACK );
+	TriangleNode xmasTreeLeaf5( 60, 40, -240, -180, COLOR_GREEN );
+	TriangleNode xmasTreeLeaf5S( 60, 40, -240, -182, COLOR_BLACK );
+	TriangleNode xmasTreeLeaf6( 50, 30, -240, -170, COLOR_GREEN );
+	TriangleNode xmasTreeLeaf6S( 50, 30, -240, -172, COLOR_BLACK );
+
+	RectangleNode xmasTreeBodyA( 60, 40, 170, -290, COLOR_BROWN );
+	TriangleNode xmasTreeLeafA( 100, 80, 170, -220, COLOR_GREEN );
+	TriangleNode xmasTreeLeaf2A( 90, 70, 170, -210, COLOR_GREEN );
+	TriangleNode xmasTreeLeaf2SA( 90, 70, 170, -212, COLOR_BLACK );
+	TriangleNode xmasTreeLeaf3A( 80, 60, 170, -200, COLOR_GREEN );
+	TriangleNode xmasTreeLeaf3SA(80, 60, 170, -202, COLOR_BLACK );
+	TriangleNode xmasTreeLeaf4A( 70, 50, 170, -190, COLOR_GREEN );
+	TriangleNode xmasTreeLeaf4SA( 70, 50, 170, -192, COLOR_BLACK );
+	TriangleNode xmasTreeLeaf5A( 60, 40, 170, -180, COLOR_GREEN );
+	TriangleNode xmasTreeLeaf5SA( 60, 40, 170, -182, COLOR_BLACK );
+	TriangleNode xmasTreeLeaf6A( 50, 30, 170, -170, COLOR_GREEN );
+	TriangleNode xmasTreeLeaf6SA( 50, 30, 170, -172, COLOR_BLACK );
+
+	RectangleNode slenderBody( 100, 30, -400, 50, 0xFFFFFFFF );
 
 	guy.children.push_back( &guyBody );
 	guy.children.push_back( &guyHead );
 
 	house.children.push_back( &roof );
+	house.children.push_back( &roofCover );
+	house.children.push_back( &houseBodyBorder );
 	house.children.push_back( &houseBody );
+	house.children.push_back( &doorBorder );
+	house.children.push_back( &door );
+	house.children.push_back( &doorKnob );
 
 	xmasTree.children.push_back( &xmasTreeBody );
 	xmasTree.children.push_back( &xmasTreeLeaf );
+	xmasTree.children.push_back( &xmasTreeLeaf2S );
+	xmasTree.children.push_back( &xmasTreeLeaf2 );	
+	xmasTree.children.push_back( &xmasTreeLeaf3S );
+	xmasTree.children.push_back( &xmasTreeLeaf3 );	
+	xmasTree.children.push_back( &xmasTreeLeaf4S );
+	xmasTree.children.push_back( &xmasTreeLeaf4 );	
+	xmasTree.children.push_back( &xmasTreeLeaf5S );
+	xmasTree.children.push_back( &xmasTreeLeaf5 );	
+	xmasTree.children.push_back( &xmasTreeLeaf6S );
+	xmasTree.children.push_back( &xmasTreeLeaf6 );
 
+	xmasTree.children.push_back( &xmasTreeBodyA );
+	xmasTree.children.push_back( &xmasTreeLeafA );
+	xmasTree.children.push_back( &xmasTreeLeaf2SA );
+	xmasTree.children.push_back( &xmasTreeLeaf2A );	
+	xmasTree.children.push_back( &xmasTreeLeaf3SA );
+	xmasTree.children.push_back( &xmasTreeLeaf3A );	
+	xmasTree.children.push_back( &xmasTreeLeaf4SA );
+	xmasTree.children.push_back( &xmasTreeLeaf4A );	
+	xmasTree.children.push_back( &xmasTreeLeaf5SA );
+	xmasTree.children.push_back( &xmasTreeLeaf5A );	
+	xmasTree.children.push_back( &xmasTreeLeaf6SA );
+	xmasTree.children.push_back( &xmasTreeLeaf6A );
+
+	airplane.children.push_back( &airp );
+	airplane.children.push_back( &airWingLeft );
+	airplane.children.push_back( &airWingLeft2 );
+	airplane.children.push_back( &airpHollow );
+	
+	scene.children.push_back( &airplane );
 	scene.children.push_back( &house );
 	scene.children.push_back( &xmasTree );
+	scene.children.push_back( &cloud );
+	
+	sun.children.push_back( &sunLight1 );
+	sun.children.push_back( &sunLight2 );
+	sun.children.push_back( &sunLight3 );
+	sun.children.push_back( &sunLight4 );
 
-	root.children.push_back( &scene );
 	root.children.push_back( &sun );
+	root.children.push_back( &scene );
 	root.children.push_back( &guy );
-
+	
 	mvpMatrixID = glGetUniformLocation( mainProgram, "mvpMatrix" );
+	GLuint timeId = glGetUniformLocation( mainProgram, "t" );
 	double t = 0;
+	double time = 1;
 
-	GLfloat camX = 150, camY = 0, camS = 1;
+	GLfloat camX = 150, camY = 0, camS = 320, camR = 0;
 
 	do {
 		int width, height;
@@ -387,39 +572,72 @@ int main()
 		if( glfwGetKey( GLFW_KEY_UP ) == GLFW_PRESS )
 		{
 			if( lShiftPressed )
-				camS += 0.02;
+				camS += 5;
 			else
 				camY += 5;
 		}
 		else if( glfwGetKey( GLFW_KEY_DOWN ) == GLFW_PRESS )
 		{
 			if( lShiftPressed )
-				camS -= 0.02;
+				camS -= 5;
 			else
 				camY -= 5;
 		}
 		else if( glfwGetKey( GLFW_KEY_LEFT ) == GLFW_PRESS )
-			camX -= 5;
+		{
+			if( lShiftPressed )
+				camR += 0.05;
+			else
+				camX -= 5;
+		}
 		else if( glfwGetKey( GLFW_KEY_RIGHT ) == GLFW_PRESS )
-			camX += 5;
+		{
+			if( lShiftPressed )
+				camR -= 0.05;
+			else
+				camX += 5;
+		}
 			
 		if( camS < 0 )
 			camS = 0;
 
 		if( camY < 0 )
 			camY = 0;
+
+		if( camY > 50 )
+			camY = 50;
+
+		if( camX < -420 )
+			camX = -420;
+		else if( camX > 240 )
+			camX = 240;
 			
         GLMatrix3 modelMatrix, transMatrix, tempMatrix;
+
+		transMatrix.setRotation( -320 + 40 * sin(t), 240, t );
+		airplane.transform = transMatrix;
+		//airplane.transform = transMatrix * airplane.transform;
+
+		transMatrix.setRotation( 0, 0, t );
+		sun.transform = transMatrix;
 
 		modelMatrix.setTranslation( -camX, -camY );
 		scene.transform = modelMatrix;
 
 		//root.transform = modelMatrix;
 		
-		tempMatrix.setClipMatrix( -( width / 2), width / 2, height/2, -( height / 2 ) ); 
+		tempMatrix.setClipMatrix( -320, 320,320, -320 ); 
 		modelMatrix = tempMatrix;
+		tempMatrix.scale( camS, camS );
+		modelMatrix = tempMatrix * modelMatrix;
+		tempMatrix.setIdentity();
+		tempMatrix.setRotation( 0, 0, -camR );
+		modelMatrix *= tempMatrix;
 		root.draw( modelMatrix );
         
+		time += 0.02;
+		glUniform1f(timeId, time);
+
 		t += 0.02;
 		//VERY IMPORTANT: displays the buffer to the screen
 		glfwSwapBuffers();
